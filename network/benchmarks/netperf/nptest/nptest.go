@@ -327,6 +327,7 @@ func (t *NetPerfRpc) RegisterClient(data *ClientRegistrationData, reply *WorkIte
 		reply.IsServerItem = true
 		reply.ServerItem.ListenPort = "5201"
 		reply.ServerItem.Timeout = 3600
+		fmt.Printf("Requesting to start iperf and netperf server on %s %s\n", data.Worker, data.IP)
 		return nil
 	}
 
@@ -524,7 +525,7 @@ func getMyIP() string {
 }
 
 func handleClientWorkItem(client *rpc.Client, workItem *WorkItem) {
-	fmt.Println("Orchestrator requests worker run item Type:", workItem.ClientItem.Type)
+	fmt.Println("Orchestrator requests worker run item:", workItem.ClientItem.Type, workItem.ClientItem.Host, workItem.ClientItem.Port, workItem.ClientItem.MSS)
 	switch {
 	case workItem.ClientItem.Type == iperfTcpTest || workItem.ClientItem.Type == iperfUdpTest:
 		outputString := iperfClient(workItem.ClientItem.Host, workItem.ClientItem.Port, workItem.ClientItem.MSS, workItem.ClientItem.Type)
@@ -633,6 +634,7 @@ func netperfClient(serverHost, serverPort string, workItemType int) (rv string) 
 }
 
 func cmdExec(command string, args []string, timeout int32) (rv string, rc bool) {
+	fmt.Println("Start to run:", command, args)
 	cmd := exec.Cmd{Path: command, Args: args}
 
 	var stdoutput bytes.Buffer
@@ -648,5 +650,6 @@ func cmdExec(command string, args []string, timeout int32) (rv string, rc bool) 
 
 	rv = stdoutput.String()
 	rc = true
+	fmt.Println("Succeeded:", rv)
 	return
 }

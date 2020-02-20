@@ -58,6 +58,7 @@ var (
 	kubeConfig     string
 	netperfImage   string
 	cleanupOnly    bool
+	cleanupAfterTest bool
 
 	everythingSelector metav1.ListOptions = metav1.ListOptions{}
 
@@ -71,11 +72,13 @@ func init() {
 	flag.IntVar(&iterations, "iterations", 1,
 		"Number of iterations to run")
 	flag.StringVar(&tag, "tag", runUUID, "CSV file suffix")
-	flag.StringVar(&netperfImage, "image", "sirot/netperf-latest", "Docker image used to run the network tests")
-	flag.StringVar(&kubeConfig, "kubeConfig", "",
+	flag.StringVar(&netperfImage, "image", "gcr.io/eminent-nation-87317/netperf", "Docker image used to run the network tests")
+	flag.StringVar(&kubeConfig, "kubeConfig", "/root/.kube/config",
 		"Location of the kube configuration file ($HOME/.kube/config")
 	flag.BoolVar(&cleanupOnly, "cleanup", false,
 		"(boolean) Run the cleanup resources phase only (use this flag to clean up orphaned resources from a test run)")
+	flag.BoolVar(&cleanupAfterTest, "cleanupAfterTest", false,
+		"(boolean) Run the cleanup resources phase after tests complete")
 }
 
 func setupClient() *kubernetes.Clientset {
@@ -259,6 +262,7 @@ func createRCs(c *kubernetes.Clientset) bool {
 		if i > 1 {
 			// Worker W1 is a client-only pod - no ports are exposed
 			portSpec = append(portSpec, api.ContainerPort{ContainerPort: iperf3Port, Protocol: api.ProtocolTCP})
+			portSpec = append(portSpec, api.ContainerPort{ContainerPort: netperfPort, Protocol: api.ProtocolTCP})
 		}
 
 		workerEnv := []api.EnvVar{
@@ -425,5 +429,7 @@ func main() {
 	secondaryNode = nodes.Items[1]
 	fmt.Printf("Selected primary,secondary nodes = (%s, %s)\n", primaryNode.GetName(), secondaryNode.GetName())
 	executeTests(c)
-	cleanup(c)
+	if cleanupAfterTest {
+		cleanup(c)
+	}
 }

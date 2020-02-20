@@ -14,7 +14,7 @@
 
 all: plot
 
-PLOTTER_DOCKER_IMAGE := girishkalele/netperf-plotperf
+PLOTTER_DOCKER_IMAGE := gcr.io/eminent-nation-87317/netperf-plotperf
 
 # Use this target 'plot' to run the docker container that will pick up netperf-latest.csv and render it into png and svg images
 plot: netperf-latest.csv
