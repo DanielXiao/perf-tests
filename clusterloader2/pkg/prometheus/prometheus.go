@@ -95,6 +95,11 @@ func NewPrometheusController(clusterLoaderConfig *config.ClusterLoaderConfig) (p
 		klog.Warningf("Couldn't get master ip, will ignore manifests requiring it: %v", err)
 		delete(mapping, "MasterIps")
 	}
+	mapping["WorkerIps"], err = util.GetWorkerIPs(pc.framework.GetClientSets().GetClient(), corev1.NodeInternalIP)
+	if err != nil {
+		klog.Warningf("Couldn't get worker internal ip, will ignore manifests requiring it: %v", err)
+		delete(mapping, "WorkerIps")
+	}
 	if _, exists := mapping["PROMETHEUS_SCRAPE_APISERVER_ONLY"]; !exists {
 		mapping["PROMETHEUS_SCRAPE_APISERVER_ONLY"] = clusterLoaderConfig.ClusterConfig.Provider == "gke" || clusterLoaderConfig.ClusterConfig.Provider == "aks"
 	}

@@ -244,7 +244,7 @@ func getPortForComponent(componentName string) (int, error) {
 	case "etcd":
 		return 2379, nil
 	case "kube-apiserver":
-		return 443, nil
+		return 8443, nil
 	case "kube-controller-manager":
 		return 10252, nil
 	case "kube-scheduler":
@@ -257,6 +257,13 @@ func getProtocolForComponent(componentName string) string {
 	switch componentName {
 	case "kube-apiserver":
 		return "https://"
+	case "etcd":
+		etcdCert, etcdKey := os.Getenv("ETCD_CERTIFICATE"), os.Getenv("ETCD_KEY")
+		if etcdCert == "" || etcdKey == "" {
+			return "https://"
+		} else {
+			return fmt.Sprintf("--cert %s --key %s https://", etcdCert, etcdKey)
+		}
 	default:
 		return "http://"
 	}

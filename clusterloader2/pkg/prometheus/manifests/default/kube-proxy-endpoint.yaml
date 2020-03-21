@@ -2,16 +2,19 @@
 
 {{if $PROMETHEUS_SCRAPE_KUBE_PROXY}}
 apiVersion: v1
-kind: Service
+kind: Endpoints
 metadata:
   labels:
     k8s-app: kube-proxy
   name: kube-proxy
   namespace: kube-system
-spec:
-  ports:
-    - name: http-metrics
-      port: 10249
-      protocol: TCP
-  type: ClusterIP
+subsets:
+  - addresses:
+    {{range .WorkerIps}}
+      - ip: {{.}}
+    {{end}}
+    ports:
+      - name: http-metrics
+        port: 10249
+        protocol: TCP
 {{end}}

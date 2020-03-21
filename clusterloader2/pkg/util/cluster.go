@@ -158,3 +158,24 @@ func GetMasterIPs(c clientset.Interface, addressType corev1.NodeAddressType) ([]
 	}
 	return ips, nil
 }
+
+// GetWorkerIPs returns worker node ips of the given type.
+func GetWorkerIPs(c clientset.Interface, addressType corev1.NodeAddressType) ([]string, error) {
+	nodeList, err := client.ListNodes(c)
+	if err != nil {
+		return nil, err
+	}
+	var ips []string
+	for i := range nodeList {
+			for _, address := range nodeList[i].Status.Addresses {
+				if address.Type == addressType && address.Address != "" {
+					ips = append(ips, address.Address)
+					break
+				}
+			}
+	}
+	if len(ips) == 0 {
+		return nil, fmt.Errorf("didn't find any %s worker IPs", addressType)
+	}
+	return ips, nil
+}

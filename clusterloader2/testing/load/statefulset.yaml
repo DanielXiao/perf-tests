@@ -54,6 +54,7 @@ spec:
     - metadata:
         name: pv
       spec:
+        storageClassName: ssd
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
